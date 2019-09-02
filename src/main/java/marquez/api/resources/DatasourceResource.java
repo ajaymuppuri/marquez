@@ -31,24 +31,24 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import lombok.NonNull;
-import marquez.api.exceptions.DatasourceUrnNotFoundException;
+import marquez.api.exceptions.DatasourceNotFoundException;
+import marquez.api.mappers.DatasourceMetaMapper;
 import marquez.api.mappers.DatasourceResponseMapper;
 import marquez.api.models.DatasourceRequest;
 import marquez.api.models.DatasourceResponse;
 import marquez.api.models.DatasourcesResponse;
-import marquez.common.models.ConnectionUrl;
-import marquez.common.models.DatasourceName;
 import marquez.common.models.DatasourceUrn;
 import marquez.service.DatasourceService;
 import marquez.service.exceptions.MarquezServiceException;
 import marquez.service.models.Datasource;
+import marquez.service.models.DatasourceMeta;
 
 @Path("/api/v1/datasources")
 public final class DatasourceResource {
-  private final DatasourceService datasourceService;
+  private final DatasourceService service;
 
-  public DatasourceResource(@NonNull final DatasourceService datasourceService) {
-    this.datasourceService = datasourceService;
+  public DatasourceResource(@NonNull final DatasourceService service) {
+    this.service = service;
   }
 
   @Timed
@@ -58,9 +58,8 @@ public final class DatasourceResource {
   @Consumes(APPLICATION_JSON)
   @Produces(APPLICATION_JSON)
   public Response create(@Valid DatasourceRequest request) throws MarquezServiceException {
-    final ConnectionUrl connectionUrl = ConnectionUrl.of(request.getConnectionUrl());
-    final DatasourceName name = DatasourceName.of(request.getName());
-    final Datasource datasource = datasourceService.create(connectionUrl, name);
+    final DatasourceMeta meta = DatasourceMetaMapper.map(request);
+    final Datasource datasource = service.create(meta);
     final DatasourceResponse response = DatasourceResponseMapper.map(datasource);
     return Response.ok(response).build();
   }
@@ -70,11 +69,11 @@ public final class DatasourceResource {
   @ExceptionMetered
   @GET
   @Produces(APPLICATION_JSON)
-  @Path("/{urn}")
+  @Path("{urn}")
   public Response get(@PathParam("urn") String urnAsString) throws MarquezServiceException {
     final DatasourceUrn urn = DatasourceUrn.of(urnAsString);
     final Datasource datasource =
-        datasourceService.get(urn).orElseThrow(() -> new DatasourceUrnNotFoundException(urn));
+        service.get(urn).orElseThrow(() -> new DatasourceNotFoundException(urn));
     final DatasourceResponse response = DatasourceResponseMapper.map(datasource);
     return Response.ok(response).build();
   }
@@ -87,7 +86,7 @@ public final class DatasourceResource {
   public Response list(
       @QueryParam("limit") @DefaultValue("100") Integer limit,
       @QueryParam("offset") @DefaultValue("0") Integer offset) {
-    final List<Datasource> datasources = datasourceService.getAll(limit, offset);
+    final List<Datasource> datasources = service.getAll(limit, offset);
     final DatasourcesResponse response =
         DatasourceResponseMapper.toDatasourcesResponse(datasources);
     return Response.ok(response).build();
