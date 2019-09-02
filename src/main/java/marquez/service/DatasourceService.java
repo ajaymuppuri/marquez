@@ -14,13 +14,12 @@
 
 package marquez.service;
 
-import java.util.Collections;
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.List;
 import java.util.Optional;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import marquez.common.models.ConnectionUrl;
-import marquez.common.models.DatasourceName;
 import marquez.common.models.DatasourceUrn;
 import marquez.db.DatasourceDao;
 import marquez.db.models.DatasourceRow;
@@ -28,56 +27,57 @@ import marquez.service.exceptions.MarquezServiceException;
 import marquez.service.mappers.DatasourceMapper;
 import marquez.service.mappers.DatasourceRowMapper;
 import marquez.service.models.Datasource;
+import marquez.service.models.DatasourceMeta;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 
 @Slf4j
 public class DatasourceService {
-  private final DatasourceDao datasourceDao;
+  private final DatasourceDao dao;
 
-  public DatasourceService(@NonNull final DatasourceDao datasourceDao) {
-    this.datasourceDao = datasourceDao;
+  public DatasourceService(@NonNull final DatasourceDao dao) {
+    this.dao = dao;
   }
 
-  public Datasource create(@NonNull ConnectionUrl connectionUrl, @NonNull DatasourceName name)
+  public Datasource createOrUpdate(@NonNull DatasourceMeta meta) throws MarquezServiceException {
+    try {
+      final DatasourceRow row = DatasourceRowMapper.map(meta);
+      return dao.insertAndGet(row)
+          .map(DatasourceMapper::map)
+          .orElseThrow(MarquezServiceException::new);
+    } catch (UnableToExecuteStatementException e) {
+      log.error("Failed to create or update datasource: {}", meta, e);
+      throw new MarquezServiceException();
+    }
+  }
+
+  public Boolean exists(@NonNull DatasourceUrn urn) throws MarquezServiceException {
+    try {
+      return dao.exists(urn);
+    } catch (UnableToExecuteStatementException e) {
+      log.error("Failed to check for datasource: {}", urn.getValue(), e);
+      throw new MarquezServiceException();
+    }
+  }
+
+  public Optional<Datasource> get(@NonNull DatasourceUrn urn) throws MarquezServiceException {
+    try {
+      return dao.findBy(urn).map(DatasourceMapper::map);
+    } catch (UnableToExecuteStatementException e) {
+      log.error("Failed to get datasource: {}", urn.getValue(), e);
+      throw new MarquezServiceException();
+    }
+  }
+
+  public List<Datasource> getAll(@NonNull Integer limit, @NonNull Integer offset)
       throws MarquezServiceException {
-    final DatasourceRow row = DatasourceRowMapper.map(connectionUrl, name);
-
+    checkArgument(limit >= 0, "limit must be >= 0");
+    checkArgument(offset >= 0, "offset must be >= 0");
     try {
-      // Check if its already there based on its name. If so, return
-      final Optional<DatasourceRow> existingRowIfFound = datasourceDao.findBy(name);
-      if (existingRowIfFound.isPresent()) {
-        return DatasourceMapper.map(existingRowIfFound.get());
-      }
-
-      Optional<DatasourceRow> insertedRow = datasourceDao.insert(row);
-      return insertedRow.map(DatasourceMapper::map).orElseThrow(MarquezServiceException::new);
+      final List<DatasourceRow> rows = dao.findAll(limit, offset);
+      return DatasourceMapper.map(rows);
     } catch (UnableToExecuteStatementException e) {
-      log.error("Database issue while trying to create datasource " + name, e.getMessage());
+      log.error("Failed to get datasources: limit={}, offset={}", limit, offset, e);
       throw new MarquezServiceException();
     }
-  }
-
-  public boolean exists(@NonNull DatasourceUrn datasourceUrn) throws MarquezServiceException {
-    try {
-      return datasourceDao.exists(datasourceUrn);
-    } catch (UnableToExecuteStatementException e) {
-      log.error("Failed to check dataset: {}", datasourceUrn.getValue(), e);
-      throw new MarquezServiceException();
-    }
-  }
-
-  public Optional<Datasource> get(@NonNull final DatasourceUrn urn) throws MarquezServiceException {
-    try {
-      final Optional<DatasourceRow> rowIfFound = datasourceDao.findBy(urn);
-      return rowIfFound.map(DatasourceMapper::map);
-    } catch (UnableToExecuteStatementException e) {
-      log.error(e.getMessage());
-      throw new MarquezServiceException();
-    }
-  }
-
-  public List<Datasource> getAll(@NonNull Integer limit, @NonNull Integer offset) {
-    final List<DatasourceRow> rows = datasourceDao.findAll(limit, offset);
-    return Collections.unmodifiableList(DatasourceMapper.map(rows));
   }
 }
