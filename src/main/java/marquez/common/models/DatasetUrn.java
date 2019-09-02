@@ -14,8 +14,10 @@
 
 package marquez.common.models;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static marquez.common.base.MorePreconditions.checkNotBlank;
 
+import java.util.List;
 import lombok.NonNull;
 
 public final class DatasetUrn extends Urn {
@@ -45,5 +47,13 @@ public final class DatasetUrn extends Urn {
   @Override
   UrnPattern pattern() {
     return PATTERN;
+  }
+
+  public static List<DatasetUrn> toList(final List<String> urnsAsString) {
+    return urnsAsString.stream().map(urnAsString -> of(urnAsString)).collect(toImmutableList());
+  }
+
+  public static List<String> toString(final List<DatasetUrn> urns) {
+    return urns.stream().map(urn -> urn.toString()).collect(toImmutableList());
   }
 }
