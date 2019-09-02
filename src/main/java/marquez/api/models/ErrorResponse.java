@@ -14,16 +14,11 @@
 
 package marquez.api.models;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NonNull;
-import lombok.ToString;
+import lombok.Value;
 
-@AllArgsConstructor
-@EqualsAndHashCode
-@ToString
-public final class ErrorResponse {
-  @Getter @NonNull private final Integer status;
-  @Getter @NonNull private final String message;
+@Value
+public class ErrorResponse {
+  @NonNull Integer status;
+  @NonNull String message;
 }

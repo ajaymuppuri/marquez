@@ -15,6 +15,8 @@
 package marquez.api.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Optional;
+import javax.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -26,4 +28,9 @@ import lombok.ToString;
 public final class DatasourceRequest {
   @Getter private final String name;
   @Getter private final String connectionUrl;
+  @Nullable private final String description;
+
+  public Optional<String> getDescription() {
+    return Optional.ofNullable(description);
+  }
 }

@@ -15,10 +15,12 @@
 package marquez.api.models;
 
 import java.util.List;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
+@Builder
 public class DatasourcesResponse {
   @NonNull List<DatasourceResponse> datasources;
 }

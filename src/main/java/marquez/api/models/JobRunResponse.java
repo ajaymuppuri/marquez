@@ -16,8 +16,10 @@ package marquez.api.models;
 
 import static marquez.common.base.MorePreconditions.checkNotBlank;
 
+import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -25,22 +27,29 @@ import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
+@Builder
 public final class JobRunResponse {
   @Getter private final String runId;
+  @Getter private final String createdAt;
+  @Getter private final String updatedAt;
   private final String nominalStartTime;
   private final String nominalEndTime;
-  private final String runArgs;
+  @Getter private final Map<String, String> runArgs;
   @Getter private final String runState;
 
   public JobRunResponse(
       @NonNull final String runId,
+      @NonNull final String createdAt,
+      @NonNull final String updatedAt,
       @Nullable final String nominalStartTime,
       @Nullable final String nominalEndTime,
-      @Nullable final String runArgs,
+      @Nullable final Map<String, String> runArgs,
       @NonNull final String runState) {
     this.runId = checkNotBlank(runId);
-    this.nominalStartTime = nominalStartTime;
-    this.nominalEndTime = nominalEndTime;
+    this.createdAt = checkNotBlank(createdAt);
+    this.updatedAt = checkNotBlank(updatedAt);
+    this.nominalStartTime = checkNotBlank(nominalStartTime);
+    this.nominalEndTime = checkNotBlank(nominalEndTime);
     this.runArgs = runArgs;
     this.runState = checkNotBlank(runState);
   }
@@ -51,9 +60,5 @@ public final class JobRunResponse {
 
   public Optional<String> getNominalEndTime() {
     return Optional.ofNullable(nominalEndTime);
-  }
-
-  public Optional<String> getRunArgs() {
-    return Optional.ofNullable(runArgs);
   }
 }

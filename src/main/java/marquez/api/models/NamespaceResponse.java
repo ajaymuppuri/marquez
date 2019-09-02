@@ -18,6 +18,7 @@ import static marquez.common.base.MorePreconditions.checkNotBlank;
 
 import java.util.Optional;
 import javax.annotation.Nullable;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -25,19 +26,23 @@ import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
+@Builder
 public final class NamespaceResponse {
   @Getter private final String name;
   @Getter private final String createdAt;
+  @Getter private final String updatedAt;
   @Getter private final String owner;
   private final String description;
 
   public NamespaceResponse(
       @NonNull final String name,
       @NonNull final String createdAt,
+      @NonNull final String updatedAt,
       @NonNull final String owner,
       @Nullable final String description) {
     this.name = checkNotBlank(name);
     this.createdAt = checkNotBlank(createdAt);
+    this.updatedAt = checkNotBlank(updatedAt);
     this.owner = checkNotBlank(owner);
     this.description = description;
   }

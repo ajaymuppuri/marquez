@@ -16,6 +16,8 @@ package marquez.api.models;
 
 import static marquez.common.base.MorePreconditions.checkNotBlank;
 
+import java.util.Optional;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -23,20 +25,28 @@ import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
+@Builder
 public final class DatasourceResponse {
   @Getter private final String name;
   @Getter private final String createdAt;
   @Getter private final String urn;
   @Getter private final String connectionUrl;
+  private final String description;
 
   public DatasourceResponse(
       @NonNull final String name,
       @NonNull final String createdAt,
       @NonNull final String urn,
-      @NonNull final String connectionUrl) {
+      @NonNull final String connectionUrl,
+      @Nullable final String description) {
     this.name = checkNotBlank(name);
     this.createdAt = checkNotBlank(createdAt);
     this.urn = checkNotBlank(urn);
     this.connectionUrl = checkNotBlank(connectionUrl);
+    this.description = description;
+  }
+
+  public Optional<String> getDescription() {
+    return Optional.ofNullable(description);
   }
 }

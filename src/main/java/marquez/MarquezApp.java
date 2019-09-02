@@ -49,7 +49,7 @@ import org.jdbi.v3.postgres.PostgresPlugin;
 import org.jdbi.v3.sqlobject.SqlObjectPlugin;
 
 @Slf4j
-public class MarquezApp extends Application<MarquezConfig> {
+public final class MarquezApp extends Application<MarquezConfig> {
   private static final String APP_NAME = "MarquezApp";
   private static final String POSTGRES_DB = "postgresql";
   private static final boolean ERROR_ON_UNDEFINED = false;

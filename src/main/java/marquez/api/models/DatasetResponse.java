@@ -18,6 +18,7 @@ import static marquez.common.base.MorePreconditions.checkNotBlank;
 
 import java.util.Optional;
 import javax.annotation.Nullable;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -25,9 +26,11 @@ import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
+@Builder
 public final class DatasetResponse {
   @Getter private final String name;
   @Getter private final String createdAt;
+  @Getter private final String updatedAt;
   @Getter private final String urn;
   @Getter private final String datasourceUrn;
   private final String description;
@@ -35,11 +38,13 @@ public final class DatasetResponse {
   public DatasetResponse(
       @NonNull final String name,
       @NonNull final String createdAt,
+      @NonNull final String updatedAt,
       @NonNull final String urn,
       @NonNull final String datasourceUrn,
       @Nullable final String description) {
     this.name = checkNotBlank(name);
     this.createdAt = checkNotBlank(createdAt);
+    this.updatedAt = checkNotBlank(updatedAt);
     this.urn = checkNotBlank(urn);
     this.datasourceUrn = checkNotBlank(datasourceUrn);
     this.description = description;
