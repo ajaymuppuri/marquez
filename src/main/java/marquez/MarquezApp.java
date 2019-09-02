@@ -140,8 +140,7 @@ public final class MarquezApp extends Application<MarquezConfig> {
     final NamespaceService namespaceService = new NamespaceService(namespaceDao);
     final JobService jobService = new JobService(jobDao, jobVersionDao, jobRunDao, jobRunArgsDao);
     final DatasourceService datasourceService = new DatasourceService(datasourceDao);
-    final DatasetService datasetService =
-        new DatasetService(namespaceDao, datasourceDao, datasetDao);
+    final DatasetService datasetService = new DatasetService(datasetDao);
 
     env.jersey().register(new NamespaceResource(namespaceService));
     env.jersey().register(new JobResource(namespaceService, jobService));
