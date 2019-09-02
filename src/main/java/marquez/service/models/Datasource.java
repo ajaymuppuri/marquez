@@ -15,17 +15,26 @@
 package marquez.service.models;
 
 import java.time.Instant;
+import java.util.Optional;
+import javax.annotation.Nullable;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 import marquez.common.models.ConnectionUrl;
 import marquez.common.models.DatasourceName;
 import marquez.common.models.DatasourceUrn;
+import marquez.common.models.Description;
 
-@Data
+@Value
 @Builder
-public final class Datasource {
-  private DatasourceName name;
-  private Instant createdAt;
-  private DatasourceUrn urn;
-  private ConnectionUrl connectionUrl;
+public class Datasource {
+  @NonNull DatasourceName name;
+  @NonNull Instant createdAt;
+  @NonNull Instant updatedAt;
+  @NonNull DatasourceUrn urn;
+  @NonNull ConnectionUrl connectionUrl;
+  @Nullable Description description;
+
+  public Optional<Description> getDescription() {
+    return Optional.ofNullable(description);
+  }
 }

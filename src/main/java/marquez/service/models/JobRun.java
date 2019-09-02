@@ -15,19 +15,35 @@
 package marquez.service.models;
 
 import java.time.Instant;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
+import lombok.Value;
 
-@Data
-@RequiredArgsConstructor
-public final class JobRun {
-  private final UUID uuid;
-  private final Integer currentState;
-  private final UUID jobVersionUuid;
-  private final String runArgsHexDigest;
-  private final String runArgs;
-  private final Instant nominalStartTime;
-  private final Instant nominalEndTime;
-  private final Instant createdAt;
+@Value
+public class JobRun {
+  @NonNull UUID runId;
+  @NonNull Instant createdAt;
+  @NonNull Instant updatedAt;
+  @Nullable Instant nominalStartTime;
+  @Nullable Instant nominalEndTime;
+  @NonNull Map<String, String> runArgs;
+  @NonNull State runState;
+
+  public Optional<Instant> getNominalStartTime() {
+    return Optional.ofNullable(nominalStartTime);
+  }
+
+  public Optional<Instant> getNominalEndTime() {
+    return Optional.ofNullable(nominalEndTime);
+  }
+
+  public enum State {
+    NEW,
+    RUNNING,
+    COMPLETED,
+    ABORTED,
+    FAILED;
+  }
 }

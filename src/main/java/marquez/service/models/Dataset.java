@@ -30,6 +30,7 @@ import marquez.common.models.Description;
 public class Dataset {
   @NonNull DatasetName name;
   @NonNull Instant createdAt;
+  @NonNull Instant updatedAt;
   @NonNull DatasetUrn urn;
   @NonNull DatasourceUrn datasourceUrn;
   @Nullable Description description;

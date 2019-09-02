@@ -20,13 +20,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import marquez.common.models.Description;
-import marquez.common.models.NamespaceName;
 import marquez.common.models.OwnerName;
 
 @Value
 @Builder
 public class NamespaceMeta {
-  @NonNull NamespaceName name;
   @NonNull OwnerName owner;
   @Nullable Description description;
 

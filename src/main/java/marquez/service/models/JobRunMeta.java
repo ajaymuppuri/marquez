@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.NonNull;
 import lombok.Value;
 
 @Value
@@ -27,7 +27,7 @@ import lombok.Value;
 public class JobRunMeta {
   @Nullable Instant nominalStartTime;
   @Nullable Instant nominalEndTime;
-  @Getter Map<String, String> runArgs;
+  @NonNull Map<String, String> runArgs;
 
   public Optional<Instant> getNominalStartTime() {
     return Optional.ofNullable(nominalStartTime);

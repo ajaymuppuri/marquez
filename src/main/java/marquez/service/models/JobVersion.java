@@ -14,19 +14,15 @@
 
 package marquez.service.models;
 
+import java.net.URI;
 import java.time.Instant;
 import java.util.UUID;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.NonNull;
+import lombok.Value;
 
-@Data
-@RequiredArgsConstructor
-public final class JobVersion {
-  private final UUID uuid;
-  private final UUID jobUuid;
-  private final String uri;
-  private final UUID version;
-  private final UUID latestJobRunUuid;
-  private final Instant createdAt;
-  private final Instant updatedAt;
+@Value
+public class JobVersion {
+  @NonNull Instant createdAt;
+  @NonNull URI location;
+  @NonNull UUID version;
 }

@@ -14,47 +14,30 @@
 
 package marquez.service.models;
 
+import java.net.URI;
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import java.util.Optional;
+import javax.annotation.Nullable;
+import lombok.NonNull;
+import lombok.Value;
+import marquez.common.models.DatasetUrn;
+import marquez.common.models.Description;
+import marquez.common.models.JobName;
 import marquez.common.models.JobType;
 
-@AllArgsConstructor
-@EqualsAndHashCode
-public final class Job {
-  @Getter private final UUID uuid;
-  @Getter private final JobType type;
-  @Getter private final String name;
-  @Getter private final String location;
-  @Getter @Setter private UUID namespaceUuid;
-  @Getter private final String description;
-  @Getter private final List<String> inputDatasetUrns;
-  @Getter private final List<String> outputDatasetUrns;
-  @Getter private final Instant createdAt;
-  @Getter private final Instant updatedAt;
+@Value
+public class Job {
+  @NonNull JobType type;
+  @NonNull JobName name;
+  @NonNull Instant createdAt;
+  @NonNull Instant updatedAt;
+  @NonNull List<DatasetUrn> inputDatasetUrns;
+  @NonNull List<DatasetUrn> outputDatasetUrns;
+  @NonNull URI location;
+  @Nullable Description description;
 
-  public Job(
-      final UUID uuid,
-      final JobType type,
-      final String name,
-      final String location,
-      final UUID namespaceUuid,
-      final String description,
-      final List<String> inputDatasetUrns,
-      final List<String> outputDatasetUrns) {
-    this.uuid = uuid;
-    this.type = type;
-    this.name = name;
-    this.location = location;
-    this.namespaceUuid = namespaceUuid;
-    this.description = description;
-    this.inputDatasetUrns = inputDatasetUrns;
-    this.outputDatasetUrns = outputDatasetUrns;
-    this.createdAt = null;
-    this.updatedAt = null;
+  public Optional<Description> getDescription() {
+    return Optional.ofNullable(description);
   }
 }
