@@ -135,12 +135,12 @@ public final class JobResource {
   @Produces(APPLICATION_JSON)
   public Response createRun(
       @PathParam("namespace") String namespaceAsString,
-      @PathParam("job") String nameAsString,
+      @PathParam("job") String jobAsString,
       @Valid JobRunRequest request)
       throws MarquezServiceException {
     final NamespaceName namespaceName = NamespaceName.of(namespaceAsString);
     throwIfNotExists(namespaceName);
-    final JobName jobName = JobName.of(nameAsString);
+    final JobName jobName = JobName.of(jobAsString);
     throwIfNotExists(jobName);
 
     final JobRunMeta runMeta = JobRunMetaMapper.map(request);
@@ -157,13 +157,13 @@ public final class JobResource {
   @Produces(APPLICATION_JSON)
   public Response listRuns(
       @PathParam("namespace") String namespaceAsString,
-      @PathParam("job") String nameAsString,
+      @PathParam("job") String jobAsString,
       @QueryParam("limit") @DefaultValue("100") Integer limit,
       @QueryParam("offset") @DefaultValue("0") Integer offset)
       throws MarquezServiceException {
     final NamespaceName namespaceName = NamespaceName.of(namespaceAsString);
     throwIfNotExists(namespaceName);
-    final JobName jobName = JobName.of(nameAsString);
+    final JobName jobName = JobName.of(jobAsString);
     throwIfNotExists(jobName);
 
     final List<JobRun> runs = jobService.getAllRunsFor(namespaceName, jobName, limit, offset);

@@ -54,6 +54,6 @@ public final class DatasetUrn extends Urn {
   }
 
   public static List<String> toString(final List<DatasetUrn> urns) {
-    return urns.stream().map(urn -> urn.toString()).collect(toImmutableList());
+    return urns.stream().map(urn -> urn.getValue()).collect(toImmutableList());
   }
 }

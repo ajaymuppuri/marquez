@@ -62,8 +62,8 @@ public final class NamespaceResource {
       @PathParam("namespace") String nameAsString, @Valid NamespaceRequest request)
       throws MarquezServiceException {
     final NamespaceName name = NamespaceName.of(nameAsString);
-    final NamespaceMeta meta = NamespaceMetaMapper.map(name, request);
-    final Namespace namespace = service.createOrUpdate(meta);
+    final NamespaceMeta meta = NamespaceMetaMapper.map(request);
+    final Namespace namespace = service.createOrUpdate(name, meta);
     final NamespaceResponse response = NamespaceResponseMapper.map(namespace);
     return Response.ok(response).build();
   }
