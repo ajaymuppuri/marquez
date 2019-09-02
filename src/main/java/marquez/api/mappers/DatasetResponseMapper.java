@@ -27,12 +27,15 @@ public final class DatasetResponseMapper {
   private DatasetResponseMapper() {}
 
   public static DatasetResponse map(@NonNull final Dataset dataset) {
-    return new DatasetResponse(
-        dataset.getName().getValue(),
-        ISO_INSTANT.format(dataset.getCreatedAt()),
-        dataset.getUrn().getValue(),
-        dataset.getDatasourceUrn().getValue(),
-        dataset.getDescription().map(description -> description.getValue()).orElse(null));
+    return DatasetResponse.builder()
+        .name(dataset.getName().getValue())
+        .createdAt(ISO_INSTANT.format(dataset.getCreatedAt()))
+        .updatedAt(ISO_INSTANT.format(dataset.getUpdatedAt()))
+        .urn(dataset.getUrn().getValue())
+        .datasourceUrn(dataset.getDatasourceUrn().getValue())
+        .description(
+            dataset.getDescription().map(description -> description.getValue()).orElse(null))
+        .build();
   }
 
   public static List<DatasetResponse> map(@NonNull final List<Dataset> datasets) {
@@ -40,6 +43,6 @@ public final class DatasetResponseMapper {
   }
 
   public static DatasetsResponse toDatasetsResponse(@NonNull final List<Dataset> datasets) {
-    return new DatasetsResponse(map(datasets));
+    return DatasetsResponse.builder().datasets(map(datasets)).build();
   }
 }

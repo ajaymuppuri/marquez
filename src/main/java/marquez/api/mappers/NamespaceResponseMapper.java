@@ -14,9 +14,8 @@
 
 package marquez.api.mappers;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
-import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 import lombok.NonNull;
@@ -27,19 +26,22 @@ import marquez.service.models.Namespace;
 public final class NamespaceResponseMapper {
   private NamespaceResponseMapper() {}
 
-  public static NamespaceResponse map(@NonNull Namespace namespace) {
-    return new NamespaceResponse(
-        namespace.getName(),
-        ISO_INSTANT.format(namespace.getCreatedAt()),
-        namespace.getOwner(),
-        namespace.getDescription());
+  public static NamespaceResponse map(@NonNull final Namespace namespace) {
+    return NamespaceResponse.builder()
+        .name(namespace.getName().getValue())
+        .createdAt(ISO_INSTANT.format(namespace.getCreatedAt()))
+        .updatedAt(ISO_INSTANT.format(namespace.getUpdatedAt()))
+        .owner(namespace.getOwner().getValue())
+        .description(
+            namespace.getDescription().map(description -> description.getValue()).orElse(null))
+        .build();
   }
 
-  public static List<NamespaceResponse> map(@NonNull List<Namespace> namespaces) {
-    return unmodifiableList(namespaces.stream().map(namespace -> map(namespace)).collect(toList()));
+  public static List<NamespaceResponse> map(@NonNull final List<Namespace> namespaces) {
+    return namespaces.stream().map(namespace -> map(namespace)).collect(toImmutableList());
   }
 
-  public static NamespacesResponse toNamespacesResponse(@NonNull List<Namespace> namespaces) {
-    return new NamespacesResponse(map(namespaces));
+  public static NamespacesResponse toNamespacesResponse(@NonNull final List<Namespace> namespaces) {
+    return NamespacesResponse.builder().namespaces(map(namespaces)).build();
   }
 }

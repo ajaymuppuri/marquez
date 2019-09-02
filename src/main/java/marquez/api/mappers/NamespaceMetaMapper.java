@@ -14,17 +14,24 @@
 
 package marquez.api.mappers;
 
+import static marquez.common.models.Description.NO_DESCRIPTION;
+
 import lombok.NonNull;
 import marquez.api.models.NamespaceRequest;
+import marquez.common.models.Description;
 import marquez.common.models.NamespaceName;
-import marquez.service.models.Namespace;
+import marquez.common.models.OwnerName;
+import marquez.service.models.NamespaceMeta;
 
-public final class NamespaceMapper {
-  private NamespaceMapper() {}
+public final class NamespaceMetaMapper {
+  private NamespaceMetaMapper() {}
 
-  public static Namespace map(
-      @NonNull NamespaceName namespaceName, @NonNull NamespaceRequest request) {
-    return new Namespace(
-        null, namespaceName.getValue(), request.getOwner(), request.getDescription().orElse(null));
+  public static NamespaceMeta map(
+      @NonNull final NamespaceName name, @NonNull final NamespaceRequest request) {
+    return NamespaceMeta.builder()
+        .name(name)
+        .owner(OwnerName.of(request.getOwner()))
+        .description(request.getDescription().map(Description::of).orElse(NO_DESCRIPTION))
+        .build();
   }
 }

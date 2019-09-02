@@ -21,21 +21,23 @@ import java.util.List;
 import lombok.NonNull;
 import marquez.api.models.JobResponse;
 import marquez.api.models.JobsResponse;
+import marquez.common.models.DatasetUrn;
 import marquez.service.models.Job;
 
 public final class JobResponseMapper {
   private JobResponseMapper() {}
 
   public static JobResponse map(@NonNull final Job job) {
-    return new JobResponse(
-        job.getType().toString(),
-        job.getName(),
-        ISO_INSTANT.format(job.getCreatedAt()),
-        ISO_INSTANT.format(job.getUpdatedAt()),
-        job.getInputDatasetUrns(),
-        job.getOutputDatasetUrns(),
-        job.getLocation(),
-        job.getDescription());
+    return JobResponse.builder()
+        .type(job.getType().toString())
+        .name(job.getName().getValue())
+        .createdAt(ISO_INSTANT.format(job.getCreatedAt()))
+        .updatedAt(ISO_INSTANT.format(job.getUpdatedAt()))
+        .inputDatasetUrns(DatasetUrn.toString(job.getInputDatasetUrns()))
+        .outputDatasetUrns(DatasetUrn.toString(job.getOutputDatasetUrns()))
+        .location(job.getLocation().toASCIIString())
+        .description(job.getDescription().map(description -> description.getValue()).orElse(null))
+        .build();
   }
 
   public static List<JobResponse> map(@NonNull final List<Job> jobs) {
@@ -43,6 +45,6 @@ public final class JobResponseMapper {
   }
 
   public static JobsResponse toJobsResponse(@NonNull final List<Job> jobs) {
-    return new JobsResponse(map(jobs));
+    return JobsResponse.builder().jobs(map(jobs)).build();
   }
 }

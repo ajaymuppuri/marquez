@@ -14,34 +14,40 @@
 
 package marquez.api.mappers;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
-import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 import lombok.NonNull;
 import marquez.api.models.JobRunResponse;
 import marquez.api.models.JobRunsResponse;
 import marquez.service.models.JobRun;
-import marquez.service.models.JobRunState;
 
 public final class JobRunResponseMapper {
   private JobRunResponseMapper() {}
 
-  public static JobRunResponse map(@NonNull JobRun run) {
-    return new JobRunResponse(
-        run.getUuid() == null ? null : run.getUuid().toString(),
-        run.getNominalStartTime() == null ? null : ISO_INSTANT.format(run.getNominalStartTime()),
-        run.getNominalEndTime() == null ? null : ISO_INSTANT.format(run.getNominalEndTime()),
-        run.getRunArgs(),
-        JobRunState.State.fromInt(run.getCurrentState()).name());
+  public static JobRunResponse map(@NonNull final JobRun run) {
+    return JobRunResponse.builder()
+        .runId(run.getRunId().toString())
+        .createdAt(ISO_INSTANT.format(run.getCreatedAt()))
+        .updatedAt(ISO_INSTANT.format(run.getUpdatedAt()))
+        .nominalStartTime(
+            run.getNominalStartTime()
+                .map(nominalStartTime -> ISO_INSTANT.format(nominalStartTime))
+                .orElse(null))
+        .nominalEndTime(
+            run.getNominalEndTime()
+                .map(nominalEndTime -> ISO_INSTANT.format(nominalEndTime))
+                .orElse(null))
+        .runArgs(run.getRunArgs())
+        .build();
   }
 
-  public static List<JobRunResponse> map(@NonNull List<JobRun> runs) {
-    return unmodifiableList(runs.stream().map(run -> map(run)).collect(toList()));
+  public static List<JobRunResponse> map(@NonNull final List<JobRun> runs) {
+    return runs.stream().map(run -> map(run)).collect(toImmutableList());
   }
 
-  public static JobRunsResponse toJobRunsResponse(@NonNull List<JobRun> runs) {
-    return new JobRunsResponse(map(runs));
+  public static JobRunsResponse toJobRunsResponse(@NonNull final List<JobRun> runs) {
+    return JobRunsResponse.builder().runs(map(runs)).build();
   }
 }

@@ -14,9 +14,8 @@
 
 package marquez.api.mappers;
 
+import static com.google.common.collect.ImmutableList.toImmutableList;
 import static java.time.format.DateTimeFormatter.ISO_INSTANT;
-import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.toList;
 
 import java.util.List;
 import lombok.NonNull;
@@ -27,20 +26,23 @@ import marquez.service.models.Datasource;
 public final class DatasourceResponseMapper {
   private DatasourceResponseMapper() {}
 
-  public static DatasourceResponse map(@NonNull Datasource datasource) {
-    return new DatasourceResponse(
-        datasource.getName().getValue(),
-        ISO_INSTANT.format(datasource.getCreatedAt()),
-        datasource.getUrn().getValue(),
-        datasource.getConnectionUrl().getRawValue());
+  public static DatasourceResponse map(@NonNull final Datasource datasource) {
+    return DatasourceResponse.builder()
+        .name(datasource.getName().getValue())
+        .createdAt(ISO_INSTANT.format(datasource.getCreatedAt()))
+        .urn(datasource.getUrn().getValue())
+        .connectionUrl(datasource.getConnectionUrl().getRawValue())
+        .description(
+            datasource.getDescription().map(description -> description.getValue()).orElse(null))
+        .build();
   }
 
-  public static List<DatasourceResponse> map(@NonNull List<Datasource> datasources) {
-    return unmodifiableList(
-        datasources.stream().map(datasource -> map(datasource)).collect(toList()));
+  public static List<DatasourceResponse> map(@NonNull final List<Datasource> datasources) {
+    return datasources.stream().map(datasource -> map(datasource)).collect(toImmutableList());
   }
 
-  public static DatasourcesResponse toDatasourcesResponse(@NonNull List<Datasource> datasources) {
-    return new DatasourcesResponse(map(datasources));
+  public static DatasourcesResponse toDatasourcesResponse(
+      @NonNull final List<Datasource> datasources) {
+    return DatasourcesResponse.builder().datasources(map(datasources)).build();
   }
 }
