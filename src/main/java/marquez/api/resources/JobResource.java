@@ -15,10 +15,13 @@
 package marquez.api.resources;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static marquez.common.models.Description.NO_DESCRIPTION;
 
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.ResponseMetered;
 import com.codahale.metrics.annotation.Timed;
+import java.net.URI;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import javax.validation.Valid;
@@ -32,12 +35,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import lombok.NonNull;
 import marquez.api.exceptions.JobNotFoundException;
 import marquez.api.exceptions.JobRunNotFoundException;
 import marquez.api.exceptions.NamespaceNotFoundException;
-import marquez.api.mappers.JobMetaMapper;
 import marquez.api.mappers.JobResponseMapper;
-import marquez.api.mappers.JobRunMetaMapper;
 import marquez.api.mappers.JobRunResponseMapper;
 import marquez.api.models.JobRequest;
 import marquez.api.models.JobResponse;
@@ -45,7 +47,10 @@ import marquez.api.models.JobRunRequest;
 import marquez.api.models.JobRunResponse;
 import marquez.api.models.JobRunsResponse;
 import marquez.api.models.JobsResponse;
+import marquez.common.models.DatasetUrn;
+import marquez.common.models.Description;
 import marquez.common.models.JobName;
+import marquez.common.models.JobType;
 import marquez.common.models.NamespaceName;
 import marquez.service.JobService;
 import marquez.service.NamespaceService;
@@ -82,7 +87,14 @@ public final class JobResource {
     throwIfNotExists(namespaceName);
 
     final JobName jobName = JobName.of(jobAsString);
-    final JobMeta jobMeta = JobMetaMapper.map(request);
+    final JobMeta jobMeta =
+        JobMeta.builder()
+            .type(JobType.valueOf(request.getType()))
+            .inputDatasetUrns(DatasetUrn.toList(request.getInputDatasetUrns()))
+            .outputDatasetUrns(DatasetUrn.toList(request.getOutputDatasetUrns()))
+            .location(URI.create(request.getLocation()))
+            .description(request.getDescription().map(Description::of).orElse(NO_DESCRIPTION))
+            .build();
     final Job job = jobService.createOrUpdate(namespaceName, jobName, jobMeta);
     final JobResponse response = JobResponseMapper.map(job);
     return Response.ok(response).build();
@@ -101,9 +113,11 @@ public final class JobResource {
     throwIfNotExists(namespaceName);
 
     final JobName jobName = JobName.of(jobAsString);
-    final Job job =
-        jobService.get(namespaceName, jobName).orElseThrow(() -> new JobNotFoundException(jobName));
-    final JobResponse response = JobResponseMapper.map(job);
+    final JobResponse response =
+        jobService
+            .get(namespaceName, jobName)
+            .map(JobResponseMapper::map)
+            .orElseThrow(() -> new JobNotFoundException(jobName));
     return Response.ok(response).build();
   }
 
@@ -141,9 +155,22 @@ public final class JobResource {
     final NamespaceName namespaceName = NamespaceName.of(namespaceAsString);
     throwIfNotExists(namespaceName);
     final JobName jobName = JobName.of(jobAsString);
-    throwIfNotExists(jobName);
+    throwIfNotExists(namespaceName, jobName);
 
-    final JobRunMeta runMeta = JobRunMetaMapper.map(request);
+    final JobRunMeta runMeta =
+        JobRunMeta.builder()
+            .nominalStartTime(
+                request
+                    .getNominalStartTime()
+                    .map(nominalStartTime -> Instant.parse(nominalStartTime))
+                    .orElse(null))
+            .nominalEndTime(
+                request
+                    .getNominalEndTime()
+                    .map(nominalEndTime -> Instant.parse(nominalEndTime))
+                    .orElse(null))
+            .runArgs(request.getRunArgs())
+            .build();
     final JobRun run = jobService.createRun(namespaceName, jobName, runMeta);
     final JobRunResponse response = JobRunResponseMapper.map(run);
     return Response.ok(response).build();
@@ -164,7 +191,7 @@ public final class JobResource {
     final NamespaceName namespaceName = NamespaceName.of(namespaceAsString);
     throwIfNotExists(namespaceName);
     final JobName jobName = JobName.of(jobAsString);
-    throwIfNotExists(jobName);
+    throwIfNotExists(namespaceName, jobName);
 
     final List<JobRun> runs = jobService.getAllRunsFor(namespaceName, jobName, limit, offset);
     final JobRunsResponse response = JobRunResponseMapper.toJobRunsResponse(runs);
@@ -178,9 +205,11 @@ public final class JobResource {
   @Path("/jobs/runs/{id}")
   @Produces(APPLICATION_JSON)
   public Response getRun(@PathParam("id") UUID runId) throws MarquezServiceException {
-    final JobRun run =
-        jobService.getRun(runId).orElseThrow(() -> new JobRunNotFoundException(runId));
-    final JobRunResponse response = JobRunResponseMapper.map(run);
+    final JobRunResponse response =
+        jobService
+            .getRun(runId)
+            .map(JobRunResponseMapper::map)
+            .orElseThrow(() -> new JobRunNotFoundException(runId));
     return Response.ok(response).build();
   }
 
@@ -225,9 +254,8 @@ public final class JobResource {
   }
 
   private Response markRunAs(UUID runId, JobRun.State runState) throws MarquezServiceException {
-    final JobRun run = jobService.markRunAs(runId, runState);
-    final JobRunResponse response = JobRunResponseMapper.map(run);
-    return Response.ok(response).build();
+    jobService.markRunAs(runId, runState);
+    return getRun(runId);
   }
 
   private void throwIfNotExists(NamespaceName name) throws MarquezServiceException {
@@ -236,9 +264,10 @@ public final class JobResource {
     }
   }
 
-  private void throwIfNotExists(JobName name) throws MarquezServiceException {
-    if (!jobService.exists(name)) {
-      throw new JobNotFoundException(name);
+  private void throwIfNotExists(NamespaceName namespaceName, JobName jobName)
+      throws MarquezServiceException {
+    if (!jobService.exists(namespaceName, jobName)) {
+      throw new JobNotFoundException(jobName);
     }
   }
 }

@@ -15,6 +15,7 @@
 package marquez.api.resources;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static marquez.common.models.Description.NO_DESCRIPTION;
 
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.ResponseMetered;
@@ -33,12 +34,14 @@ import javax.ws.rs.core.Response;
 import lombok.NonNull;
 import marquez.api.exceptions.DatasetNotFoundException;
 import marquez.api.exceptions.NamespaceNotFoundException;
-import marquez.api.mappers.DatasetMetaMapper;
 import marquez.api.mappers.DatasetResponseMapper;
 import marquez.api.models.DatasetRequest;
 import marquez.api.models.DatasetResponse;
 import marquez.api.models.DatasetsResponse;
+import marquez.common.models.DatasetName;
 import marquez.common.models.DatasetUrn;
+import marquez.common.models.DatasourceUrn;
+import marquez.common.models.Description;
 import marquez.common.models.NamespaceName;
 import marquez.service.DatasetService;
 import marquez.service.NamespaceService;
@@ -70,7 +73,12 @@ public final class DatasetResource {
     final NamespaceName namespaceName = NamespaceName.of(namespaceAsString);
     throwIfNotExists(namespaceName);
 
-    final DatasetMeta meta = DatasetMetaMapper.map(request);
+    final DatasetMeta meta =
+        DatasetMeta.builder()
+            .name(DatasetName.of(request.getName()))
+            .datasourceUrn(DatasourceUrn.of(request.getDatasourceUrn()))
+            .description(request.getDescription().map(Description::of).orElse(NO_DESCRIPTION))
+            .build();
     final Dataset dataset = datasetService.createOrUpdate(namespaceName, meta);
     final DatasetResponse response = DatasetResponseMapper.map(dataset);
     return Response.ok(response).build();
@@ -89,9 +97,11 @@ public final class DatasetResource {
     throwIfNotExists(namespaceName);
 
     final DatasetUrn urn = DatasetUrn.of(urnAsString);
-    final Dataset dataset =
-        datasetService.get(urn).orElseThrow(() -> new DatasetNotFoundException(urn));
-    final DatasetResponse response = DatasetResponseMapper.map(dataset);
+    final DatasetResponse response =
+        datasetService
+            .get(urn)
+            .map(DatasetResponseMapper::map)
+            .orElseThrow(() -> new DatasetNotFoundException(urn));
     return Response.ok(response).build();
   }
 

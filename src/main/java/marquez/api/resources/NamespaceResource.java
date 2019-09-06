@@ -15,6 +15,7 @@
 package marquez.api.resources;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static marquez.common.models.Description.NO_DESCRIPTION;
 
 import com.codahale.metrics.annotation.ExceptionMetered;
 import com.codahale.metrics.annotation.ResponseMetered;
@@ -32,12 +33,13 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import lombok.NonNull;
 import marquez.api.exceptions.NamespaceNotFoundException;
-import marquez.api.mappers.NamespaceMetaMapper;
 import marquez.api.mappers.NamespaceResponseMapper;
 import marquez.api.models.NamespaceRequest;
 import marquez.api.models.NamespaceResponse;
 import marquez.api.models.NamespacesResponse;
+import marquez.common.models.Description;
 import marquez.common.models.NamespaceName;
+import marquez.common.models.OwnerName;
 import marquez.service.NamespaceService;
 import marquez.service.exceptions.MarquezServiceException;
 import marquez.service.models.Namespace;
@@ -62,7 +64,11 @@ public final class NamespaceResource {
       @PathParam("namespace") String nameAsString, @Valid NamespaceRequest request)
       throws MarquezServiceException {
     final NamespaceName name = NamespaceName.of(nameAsString);
-    final NamespaceMeta meta = NamespaceMetaMapper.map(request);
+    final NamespaceMeta meta =
+        NamespaceMeta.builder()
+            .owner(OwnerName.of(request.getOwner()))
+            .description(request.getDescription().map(Description::of).orElse(NO_DESCRIPTION))
+            .build();
     final Namespace namespace = service.createOrUpdate(name, meta);
     final NamespaceResponse response = NamespaceResponseMapper.map(namespace);
     return Response.ok(response).build();
@@ -76,9 +82,11 @@ public final class NamespaceResource {
   @Produces(APPLICATION_JSON)
   public Response get(@PathParam("namespace") String nameAsString) throws MarquezServiceException {
     final NamespaceName name = NamespaceName.of(nameAsString);
-    final Namespace namespace =
-        service.get(name).orElseThrow(() -> new NamespaceNotFoundException(name));
-    final NamespaceResponse response = NamespaceResponseMapper.map(namespace);
+    final NamespaceResponse response =
+        service
+            .get(name)
+            .map(NamespaceResponseMapper::map)
+            .orElseThrow(() -> new NamespaceNotFoundException(name));
     return Response.ok(response).build();
   }
 
