@@ -15,21 +15,30 @@
 package marquez.api.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-@AllArgsConstructor(onConstructor = @__(@JsonCreator))
 @EqualsAndHashCode
 @ToString
 public final class JobRunRequest {
-  @Nullable private final String nominalStartTime;
-  @Nullable private final String nominalEndTime;
+  private final String nominalStartTime;
+  private final String nominalEndTime;
   @Getter private final Map<String, String> runArgs;
+
+  @JsonCreator
+  public JobRunRequest(
+      @Nullable final String nominalStartTime,
+      @Nullable final String nominalEndTime,
+      final Map<String, String> runArgs) {
+    this.nominalStartTime = nominalStartTime;
+    this.nominalEndTime = nominalEndTime;
+    this.runArgs = (runArgs == null) ? Collections.emptyMap() : runArgs;
+  }
 
   public Optional<String> getNominalStartTime() {
     return Optional.ofNullable(nominalStartTime);

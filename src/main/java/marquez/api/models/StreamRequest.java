@@ -15,21 +15,27 @@
 package marquez.api.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.util.Optional;
-import javax.annotation.Nullable;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
-@AllArgsConstructor(onConstructor = @__(@JsonCreator))
-@EqualsAndHashCode
-@ToString
-public final class NamespaceRequest {
-  @Getter private final String ownerName;
-  @Nullable private final String description;
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public final class StreamRequest extends DatasetRequest {
+  @Getter private final String schemaLocation;
 
-  public Optional<String> getDescription() {
-    return Optional.ofNullable(description);
+  @Builder
+  @JsonCreator
+  public StreamRequest(
+      @NonNull final String type,
+      @NonNull final String name,
+      @NonNull final String physicalName,
+      @NonNull final String datasourceName,
+      @NonNull final String schemaLocation,
+      @NonNull final String description) {
+    super(type, name, physicalName, datasourceName, description);
+    this.schemaLocation = schemaLocation;
   }
 }

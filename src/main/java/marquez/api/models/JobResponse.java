@@ -33,8 +33,8 @@ public final class JobResponse {
   @Getter private final String name;
   @Getter private final String createdAt;
   @Getter private final String updatedAt;
-  @Getter private final List<String> inputDatasetUrns;
-  @Getter private final List<String> outputDatasetUrns;
+  @Getter private final List<String> inputs;
+  @Getter private final List<String> outputs;
   @Getter private final String location;
   private final String description;
 
@@ -43,16 +43,16 @@ public final class JobResponse {
       @NonNull final String name,
       @NonNull final String createdAt,
       @NonNull final String updatedAt,
-      @NonNull final List<String> inputDatasetUrns,
-      @NonNull final List<String> outputDatasetUrns,
+      @NonNull final List<String> inputs,
+      @NonNull final List<String> outputs,
       @NonNull final String location,
       @Nullable final String description) {
     this.type = checkNotBlank(type);
     this.name = checkNotBlank(name);
     this.createdAt = checkNotBlank(createdAt);
     this.updatedAt = checkNotBlank(updatedAt);
-    this.inputDatasetUrns = inputDatasetUrns;
-    this.outputDatasetUrns = outputDatasetUrns;
+    this.inputs = inputs;
+    this.outputs = outputs;
     this.location = checkNotBlank(location);
     this.description = description;
   }

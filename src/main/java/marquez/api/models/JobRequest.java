@@ -14,8 +14,8 @@ import lombok.ToString;
 @ToString
 public final class JobRequest {
   @Getter private final String type;
-  @Getter private final List<String> inputDatasetUrns;
-  @Getter private final List<String> outputDatasetUrns;
+  @Getter private final List<String> inputs;
+  @Getter private final List<String> outputs;
   @Getter private final String location;
   @Nullable private final String description;
 

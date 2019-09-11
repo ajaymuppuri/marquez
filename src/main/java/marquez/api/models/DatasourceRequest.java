@@ -26,6 +26,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 @ToString
 public final class DatasourceRequest {
+  @Getter private final String type;
   @Getter private final String name;
   @Getter private final String connectionUrl;
   @Nullable private final String description;

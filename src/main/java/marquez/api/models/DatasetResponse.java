@@ -16,9 +16,10 @@ package marquez.api.models;
 
 import static marquez.common.base.MorePreconditions.checkNotBlank;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -26,27 +27,34 @@ import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
-@Builder
-public final class DatasetResponse {
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({
+  @JsonSubTypes.Type(value = DbTableRequest.class, name = "DB_TABLE"),
+  @JsonSubTypes.Type(value = StreamRequest.class, name = "STREAM")
+})
+public abstract class DatasetResponse {
+  @Getter private final String type;
   @Getter private final String name;
+  @Getter private final String physicalName;
   @Getter private final String createdAt;
   @Getter private final String updatedAt;
-  @Getter private final String urn;
-  @Getter private final String datasourceUrn;
+  @Getter private final String datasourceName;
   private final String description;
 
   public DatasetResponse(
+      @NonNull final String type,
       @NonNull final String name,
+      @NonNull final String physicalName,
       @NonNull final String createdAt,
       @NonNull final String updatedAt,
-      @NonNull final String urn,
-      @NonNull final String datasourceUrn,
+      @NonNull final String datasourceName,
       @Nullable final String description) {
+    this.type = checkNotBlank(type);
     this.name = checkNotBlank(name);
+    this.physicalName = checkNotBlank(physicalName);
     this.createdAt = checkNotBlank(createdAt);
     this.updatedAt = checkNotBlank(updatedAt);
-    this.urn = checkNotBlank(urn);
-    this.datasourceUrn = checkNotBlank(datasourceUrn);
+    this.datasourceName = checkNotBlank(datasourceName);
     this.description = description;
   }
 

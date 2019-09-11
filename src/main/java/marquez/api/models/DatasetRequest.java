@@ -14,21 +14,40 @@
 
 package marquez.api.models;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-@AllArgsConstructor(onConstructor = @__(@JsonCreator))
 @EqualsAndHashCode
 @ToString
-public final class DatasetRequest {
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({
+  @JsonSubTypes.Type(value = DbTableRequest.class, name = "DB_TABLE"),
+  @JsonSubTypes.Type(value = StreamRequest.class, name = "STREAM")
+})
+public abstract class DatasetRequest {
+  @Getter private final String type;
   @Getter private final String name;
-  @Getter private final String datasourceUrn;
-  @Nullable private final String description;
+  @Getter private final String physicalName;
+  @Getter private final String datasourceName;
+  private final String description;
+
+  public DatasetRequest(
+      final String type,
+      final String name,
+      final String physicalName,
+      final String datasourceName,
+      @Nullable final String description) {
+    this.type = type;
+    this.name = name;
+    this.physicalName = physicalName;
+    this.datasourceName = datasourceName;
+    this.description = description;
+  }
 
   public Optional<String> getDescription() {
     return Optional.ofNullable(description);

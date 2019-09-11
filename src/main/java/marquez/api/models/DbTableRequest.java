@@ -15,21 +15,22 @@
 package marquez.api.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import java.util.Optional;
-import javax.annotation.Nullable;
-import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
+import lombok.NonNull;
 import lombok.ToString;
 
-@AllArgsConstructor(onConstructor = @__(@JsonCreator))
-@EqualsAndHashCode
-@ToString
-public final class NamespaceRequest {
-  @Getter private final String ownerName;
-  @Nullable private final String description;
-
-  public Optional<String> getDescription() {
-    return Optional.ofNullable(description);
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public final class DbTableRequest extends DatasetRequest {
+  @Builder
+  @JsonCreator
+  public DbTableRequest(
+      @NonNull final String type,
+      @NonNull final String name,
+      @NonNull final String physicalName,
+      @NonNull final String datasourceName,
+      @NonNull final String description) {
+    super(type, name, physicalName, datasourceName, description);
   }
 }

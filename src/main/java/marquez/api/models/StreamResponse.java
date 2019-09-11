@@ -16,38 +16,28 @@ package marquez.api.models;
 
 import static marquez.common.base.MorePreconditions.checkNotBlank;
 
-import java.util.Optional;
-import javax.annotation.Nullable;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
-@EqualsAndHashCode
-@ToString
-@Builder
-public final class DatasourceResponse {
-  @Getter private final String type;
-  @Getter private final String name;
-  @Getter private final String createdAt;
-  @Getter private final String connectionUrl;
-  private final String description;
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
+public final class StreamResponse extends DatasetResponse {
+  @Getter private final String schemaLocation;
 
-  public DatasourceResponse(
+  @Builder
+  public StreamResponse(
       @NonNull final String type,
       @NonNull final String name,
+      @NonNull final String physicalName,
       @NonNull final String createdAt,
-      @NonNull final String connectionUrl,
-      @Nullable final String description) {
-    this.type = checkNotBlank(type);
-    this.name = checkNotBlank(name);
-    this.createdAt = checkNotBlank(createdAt);
-    this.connectionUrl = checkNotBlank(connectionUrl);
-    this.description = description;
-  }
-
-  public Optional<String> getDescription() {
-    return Optional.ofNullable(description);
+      @NonNull final String updatedAt,
+      @NonNull final String datasourceName,
+      @NonNull final String schemaLocation,
+      @NonNull final String description) {
+    super(type, name, physicalName, createdAt, updatedAt, datasourceName, description);
+    this.schemaLocation = checkNotBlank(schemaLocation);
   }
 }
