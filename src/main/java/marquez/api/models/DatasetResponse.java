@@ -29,32 +29,30 @@ import lombok.ToString;
 @ToString
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
-  @JsonSubTypes.Type(value = DbTableRequest.class, name = "DB_TABLE"),
-  @JsonSubTypes.Type(value = StreamRequest.class, name = "STREAM")
+  @JsonSubTypes.Type(value = DbTableResponse.class, name = "DB_TABLE"),
+  @JsonSubTypes.Type(value = StreamResponse.class, name = "STREAM"),
+  @JsonSubTypes.Type(value = HttpEndpointResponse.class, name = "HTTP_ENDPOINT")
 })
 public abstract class DatasetResponse {
-  @Getter private final String type;
   @Getter private final String name;
   @Getter private final String physicalName;
   @Getter private final String createdAt;
   @Getter private final String updatedAt;
-  @Getter private final String datasourceName;
-  private final String description;
+  @Getter private final String sourceName;
+  @Nullable private final String description;
 
   public DatasetResponse(
-      @NonNull final String type,
       @NonNull final String name,
       @NonNull final String physicalName,
       @NonNull final String createdAt,
       @NonNull final String updatedAt,
-      @NonNull final String datasourceName,
+      @NonNull final String sourceName,
       @Nullable final String description) {
-    this.type = checkNotBlank(type);
     this.name = checkNotBlank(name);
     this.physicalName = checkNotBlank(physicalName);
     this.createdAt = checkNotBlank(createdAt);
     this.updatedAt = checkNotBlank(updatedAt);
-    this.datasourceName = checkNotBlank(datasourceName);
+    this.sourceName = checkNotBlank(sourceName);
     this.description = description;
   }
 

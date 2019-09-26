@@ -15,10 +15,9 @@
 package marquez.api.models;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import lombok.Builder;
+import javax.annotation.Nullable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
@@ -26,16 +25,14 @@ import lombok.ToString;
 public final class StreamRequest extends DatasetRequest {
   @Getter private final String schemaLocation;
 
-  @Builder
   @JsonCreator
   public StreamRequest(
-      @NonNull final String type,
-      @NonNull final String name,
-      @NonNull final String physicalName,
-      @NonNull final String datasourceName,
-      @NonNull final String schemaLocation,
-      @NonNull final String description) {
-    super(type, name, physicalName, datasourceName, description);
+      final String physicalName,
+      final String sourceName,
+      final String schemaLocation,
+      @Nullable final String description,
+      @Nullable final String runId) {
+    super(physicalName, sourceName, description, runId);
     this.schemaLocation = schemaLocation;
   }
 }

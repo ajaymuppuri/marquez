@@ -14,27 +14,47 @@
 
 package marquez.service.models;
 
-import java.net.URI;
+import static com.google.common.base.Charsets.UTF_8;
+import static java.util.stream.Collectors.joining;
+
+import com.google.common.base.Joiner;
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import javax.annotation.Nullable;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import marquez.common.models.DatasetUrn;
-import marquez.common.models.Description;
-import marquez.common.models.JobType;
+import marquez.common.DatasetName;
+import marquez.common.JobName;
+import marquez.common.JobType;
+import marquez.common.NamespaceName;
 
 @Value
-@Builder
 public class JobMeta {
-  @NonNull JobType type;
-  @NonNull List<DatasetUrn> inputDatasetUrns;
-  @NonNull List<DatasetUrn> outputDatasetUrns;
-  @NonNull URI location;
-  @Nullable Description description;
+  private static final String VERSION_DELIM = ":";
+  private static final Joiner VERSION_JOINER = Joiner.on(VERSION_DELIM);
 
-  public Optional<Description> getDescription() {
+  @NonNull JobType type;
+  @NonNull List<DatasetName> inputs;
+  @NonNull List<DatasetName> outputs;
+  @NonNull URL location;
+  @Nullable String description;
+
+  public Optional<String> getDescription() {
     return Optional.ofNullable(description);
+  }
+
+  public UUID version(NamespaceName namespaceName, JobName jobName) {
+    final byte[] bytes =
+        VERSION_JOINER
+            .join(
+                namespaceName.getValue(),
+                jobName.getValue(),
+                inputs.stream().map(input -> input.getValue()).collect(joining(VERSION_DELIM)),
+                outputs.stream().map(output -> output.getValue()).collect(joining(VERSION_DELIM)),
+                location.toString())
+            .getBytes(UTF_8);
+    return UUID.nameUUIDFromBytes(bytes);
   }
 }

@@ -16,19 +16,16 @@ package marquez.service.models;
 
 import java.util.Optional;
 import javax.annotation.Nullable;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import marquez.common.models.Description;
-import marquez.common.models.OwnerName;
+import marquez.common.OwnerName;
 
 @Value
-@Builder
 public class NamespaceMeta {
-  @NonNull OwnerName owner;
-  @Nullable Description description;
+  @NonNull OwnerName ownerName;
+  @Nullable String description;
 
-  public Optional<Description> getDescription() {
+  public Optional<String> getDescription() {
     return Optional.ofNullable(description);
   }
 }

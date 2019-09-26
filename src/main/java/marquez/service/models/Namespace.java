@@ -17,23 +17,20 @@ package marquez.service.models;
 import java.time.Instant;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import marquez.common.models.Description;
-import marquez.common.models.NamespaceName;
-import marquez.common.models.OwnerName;
+import marquez.common.NamespaceName;
+import marquez.common.OwnerName;
 
 @Value
-@Builder
 public class Namespace {
   @NonNull NamespaceName name;
   @NonNull Instant createdAt;
   @NonNull Instant updatedAt;
-  @NonNull OwnerName owner;
-  @Nullable Description description;
+  @NonNull OwnerName ownerName;
+  @Nullable String description;
 
-  public Optional<Description> getDescription() {
+  public Optional<String> getDescription() {
     return Optional.ofNullable(description);
   }
 }

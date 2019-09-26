@@ -14,17 +14,16 @@
 
 package marquez.service.models;
 
-import java.net.URI;
+import java.net.URL;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import lombok.NonNull;
 import lombok.Value;
-import marquez.common.models.DatasetUrn;
-import marquez.common.models.Description;
-import marquez.common.models.JobName;
-import marquez.common.models.JobType;
+import marquez.common.DatasetName;
+import marquez.common.JobName;
+import marquez.common.JobType;
 
 @Value
 public class Job {
@@ -32,12 +31,12 @@ public class Job {
   @NonNull JobName name;
   @NonNull Instant createdAt;
   @NonNull Instant updatedAt;
-  @NonNull List<DatasetUrn> inputDatasetUrns;
-  @NonNull List<DatasetUrn> outputDatasetUrns;
-  @NonNull URI location;
-  @Nullable Description description;
+  @NonNull List<DatasetName> inputs;
+  @NonNull List<DatasetName> outputs;
+  @NonNull URL location;
+  @Nullable String description;
 
-  public Optional<Description> getDescription() {
+  public Optional<String> getDescription() {
     return Optional.ofNullable(description);
   }
 }

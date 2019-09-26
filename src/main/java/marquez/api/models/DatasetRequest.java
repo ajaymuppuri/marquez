@@ -14,42 +14,36 @@
 
 package marquez.api.models;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+@AllArgsConstructor(onConstructor = @__(@JsonCreator))
 @EqualsAndHashCode
 @ToString
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
 @JsonSubTypes({
   @JsonSubTypes.Type(value = DbTableRequest.class, name = "DB_TABLE"),
-  @JsonSubTypes.Type(value = StreamRequest.class, name = "STREAM")
+  @JsonSubTypes.Type(value = StreamRequest.class, name = "STREAM"),
+  @JsonSubTypes.Type(value = HttpEndpointRequest.class, name = "HTTP_ENDPOINT")
 })
 public abstract class DatasetRequest {
-  @Getter private final String type;
-  @Getter private final String name;
   @Getter private final String physicalName;
-  @Getter private final String datasourceName;
-  private final String description;
-
-  public DatasetRequest(
-      final String type,
-      final String name,
-      final String physicalName,
-      final String datasourceName,
-      @Nullable final String description) {
-    this.type = type;
-    this.name = name;
-    this.physicalName = physicalName;
-    this.datasourceName = datasourceName;
-    this.description = description;
-  }
+  @Getter private final String sourceName;
+  @Nullable private final String description;
+  @Nullable private final String runId;
 
   public Optional<String> getDescription() {
     return Optional.ofNullable(description);
+  }
+
+  public Optional<String> getRunId() {
+    return Optional.ofNullable(runId);
   }
 }

@@ -14,67 +14,128 @@
 
 package marquez.service;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.common.collect.ImmutableList;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import marquez.common.models.DatasetUrn;
-import marquez.common.models.NamespaceName;
+import marquez.common.DatasetName;
+import marquez.common.NamespaceName;
 import marquez.db.DatasetDao;
+import marquez.db.DatasetVersionDao;
+import marquez.db.NamespaceDao;
+import marquez.db.SourceDao;
 import marquez.db.models.DatasetRow;
-import marquez.db.models.DatasetRowExtended;
+import marquez.db.models.DatasetVersionRow;
+import marquez.db.models.ExtendedDatasetRow;
+import marquez.db.models.NamespaceRow;
+import marquez.db.models.SourceRow;
 import marquez.service.exceptions.MarquezServiceException;
-import marquez.service.mappers.DatasetMapper;
-import marquez.service.mappers.DatasetRowMapper;
+import marquez.service.mappers.Mapper;
 import marquez.service.models.Dataset;
 import marquez.service.models.DatasetMeta;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 
 @Slf4j
 public class DatasetService {
-  private final DatasetDao dao;
+  private final NamespaceDao namespaceDao;
+  private final SourceDao sourceDao;
+  private final DatasetDao datasetDao;
+  private final DatasetVersionDao versionDao;
 
-  public DatasetService(@NonNull final DatasetDao dao) {
-    this.dao = dao;
+  public DatasetService(
+      @NonNull final NamespaceDao namespaceDao,
+      @NonNull final SourceDao sourceDao,
+      @NonNull final DatasetDao datasetDao,
+      @NonNull final DatasetVersionDao versionDao) {
+    this.namespaceDao = namespaceDao;
+    this.sourceDao = sourceDao;
+    this.datasetDao = datasetDao;
+    this.versionDao = versionDao;
   }
 
-  public Dataset createOrUpdate(@NonNull NamespaceName namespaceName, @NonNull DatasetMeta meta)
+  public Dataset createOrUpdate(
+      @NonNull NamespaceName namespaceName,
+      @NonNull DatasetName datasetName,
+      @NonNull DatasetMeta meta)
       throws MarquezServiceException {
     try {
-      final DatasetRow row = DatasetRowMapper.map(meta);
-      return dao.insertAndGet(namespaceName, row)
-          .map(DatasetMapper::map)
-          .orElseThrow(MarquezServiceException::new);
+      if (!exists(datasetName)) {
+        final NamespaceRow namespaceRow = namespaceDao.findBy(namespaceName.getValue()).get();
+        final SourceRow sourceRow = sourceDao.findBy(meta.getSourceName().getValue()).get();
+        final DatasetRow newDatasetRow =
+            Mapper.toDatasetRow(namespaceRow.getUuid(), sourceRow.getUuid(), datasetName, meta);
+
+        datasetDao.insert(newDatasetRow);
+      }
+
+      final Optional<UUID> version = meta.version(namespaceName, datasetName);
+      if (version.isPresent()) {
+        if (!versionDao.exists(version.get())) {
+          final ExtendedDatasetRow extendedRow = datasetDao.findBy(datasetName.getValue()).get();
+          final DatasetVersionRow newVersionRow =
+              Mapper.toDatasetVersionRow(extendedRow.getUuid(), version.get(), meta);
+          versionDao.insertAndUpdateWith(newVersionRow, Instant.now());
+        }
+      }
+
+      return get(datasetName).get();
     } catch (UnableToExecuteStatementException e) {
-      log.error("Failed to create dataset {} for namespace {}.", meta, namespaceName.getValue(), e);
+      log.error(
+          "Failed to create or update dataset for namespace {} with meta: {}",
+          namespaceName.getValue(),
+          meta,
+          e);
       throw new MarquezServiceException();
     }
   }
 
-  public Boolean exists(@NonNull DatasetUrn urn) throws MarquezServiceException {
+  public boolean exists(@NonNull DatasetName name) throws MarquezServiceException {
     try {
-      return dao.exists(urn);
+      return datasetDao.exists(name.getValue());
     } catch (UnableToExecuteStatementException e) {
-      log.error("Failed to check dataset: {}", urn.getValue(), e);
+      log.error("Failed to check dataset {}.", name.getValue(), e);
       throw new MarquezServiceException();
     }
   }
 
-  public Optional<Dataset> get(@NonNull DatasetUrn urn) throws MarquezServiceException {
+  public Optional<Dataset> get(@NonNull DatasetName name) throws MarquezServiceException {
     try {
-      return dao.findBy(urn).map(DatasetMapper::map);
+      final Optional<ExtendedDatasetRow> extendedRow = datasetDao.findBy(name.getValue());
+      if (extendedRow.isPresent()) {
+        final DatasetVersionRow versionRow = getVersionRowOrNull(extendedRow.get());
+        final Dataset dataset = Mapper.toDataset(extendedRow.get(), versionRow);
+        return Optional.of(dataset);
+      }
+
+      return Optional.empty();
     } catch (UnableToExecuteStatementException e) {
-      log.error("Failed to get dataset: {}", urn.getValue(), e.getMessage());
+      log.error("Failed to get dataset {}.", name.getValue(), e.getMessage());
       throw new MarquezServiceException();
     }
   }
 
-  public List<Dataset> getAll(
-      @NonNull NamespaceName namespaceName, @NonNull Integer limit, @NonNull Integer offset)
+  public List<Dataset> getAll(@NonNull NamespaceName namespaceName, int limit, int offset)
       throws MarquezServiceException {
+    checkArgument(limit >= 0, "limit must be >= 0");
+    checkArgument(offset >= 0, "offset must be >= 0");
     try {
-      final List<DatasetRowExtended> rows = dao.findAll(namespaceName, limit, offset);
-      return DatasetMapper.map(rows);
+      final List<ExtendedDatasetRow> extendedRows =
+          datasetDao.findAll(namespaceName.getValue(), limit, offset);
+
+      final ImmutableList.Builder<Dataset> builder = ImmutableList.builder();
+      extendedRows.forEach(
+          extendedRow -> {
+            final DatasetVersionRow versionRow = getVersionRowOrNull(extendedRow);
+            final Dataset dataset = Mapper.toDataset(extendedRow, versionRow);
+            builder.add(dataset);
+          });
+
+      return builder.build();
     } catch (UnableToExecuteStatementException e) {
       log.error(
           "Failed to get datasets for namespace {}: limit={}, offset={}",
@@ -84,5 +145,11 @@ public class DatasetService {
           e);
       throw new MarquezServiceException();
     }
+  }
+
+  private DatasetVersionRow getVersionRowOrNull(@NonNull ExtendedDatasetRow extendedRow) {
+    return (extendedRow.getCurrentVersionUuid().isPresent())
+        ? versionDao.findBy(extendedRow.getType(), extendedRow.getCurrentVersionUuid().get()).get()
+        : null;
   }
 }

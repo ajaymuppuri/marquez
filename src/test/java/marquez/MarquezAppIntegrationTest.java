@@ -14,27 +14,18 @@
 
 package marquez;
 
-import static javax.ws.rs.core.Response.Status.OK;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.net.URI;
-import javax.ws.rs.core.Response;
-import marquez.db.fixtures.AppWithPostgresRule;
-import org.junit.ClassRule;
-import org.junit.Test;
-
 public class MarquezAppIntegrationTest {
-  @ClassRule public static final AppWithPostgresRule APP = new AppWithPostgresRule();
-
-  @Test
-  public void testApp_run() {
-    final Response response =
-        APP.client()
-            .target(URI.create("http://localhost:" + APP.getAdminPort()))
-            .path("/ping")
-            .request()
-            .get();
-    assertThat(response.getStatus()).isEqualTo(OK.getStatusCode());
-    assertThat(response.readEntity(String.class)).isEqualTo("pong\n");
-  }
+  // @ClassRule public static final AppWithPostgresRule APP = new AppWithPostgresRule();
+  //
+  // @Test
+  // public void testApp_run() {
+  //   final Response response =
+  //       APP.client()
+  //           .target(URI.create("http://localhost:" + APP.getAdminPort()))
+  //           .path("/ping")
+  //           .request()
+  //           .get();
+  //   assertThat(response.getStatus()).isEqualTo(OK.getStatusCode());
+  //   assertThat(response.readEntity(String.class)).isEqualTo("pong\n");
+  // }
 }

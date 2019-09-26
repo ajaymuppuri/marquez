@@ -19,7 +19,6 @@ import static marquez.common.base.MorePreconditions.checkNotBlank;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
-import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -27,7 +26,6 @@ import lombok.ToString;
 
 @EqualsAndHashCode
 @ToString
-@Builder
 public final class JobResponse {
   @Getter private final String type;
   @Getter private final String name;
@@ -36,7 +34,7 @@ public final class JobResponse {
   @Getter private final List<String> inputs;
   @Getter private final List<String> outputs;
   @Getter private final String location;
-  private final String description;
+  @Nullable private final String description;
 
   public JobResponse(
       @NonNull final String type,

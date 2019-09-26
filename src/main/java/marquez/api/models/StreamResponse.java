@@ -16,7 +16,8 @@ package marquez.api.models;
 
 import static marquez.common.base.MorePreconditions.checkNotBlank;
 
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import javax.annotation.Nullable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
@@ -24,20 +25,28 @@ import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
+@JsonPropertyOrder({
+  "type",
+  "name",
+  "physicalName",
+  "createdAt",
+  "updatedAt",
+  "sourceName",
+  "schemaLocation",
+  "description"
+})
 public final class StreamResponse extends DatasetResponse {
   @Getter private final String schemaLocation;
 
-  @Builder
   public StreamResponse(
-      @NonNull final String type,
       @NonNull final String name,
       @NonNull final String physicalName,
       @NonNull final String createdAt,
       @NonNull final String updatedAt,
-      @NonNull final String datasourceName,
+      @NonNull final String sourceName,
       @NonNull final String schemaLocation,
-      @NonNull final String description) {
-    super(type, name, physicalName, createdAt, updatedAt, datasourceName, description);
+      @Nullable final String description) {
+    super(name, physicalName, createdAt, updatedAt, sourceName, description);
     this.schemaLocation = checkNotBlank(schemaLocation);
   }
 }

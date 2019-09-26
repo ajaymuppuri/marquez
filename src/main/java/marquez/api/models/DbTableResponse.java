@@ -14,23 +14,20 @@
 
 package marquez.api.models;
 
-import lombok.Builder;
+import javax.annotation.Nullable;
 import lombok.EqualsAndHashCode;
-import lombok.NonNull;
 import lombok.ToString;
 
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public final class DbTableResponse extends DatasetResponse {
-  @Builder
   public DbTableResponse(
-      @NonNull final String type,
-      @NonNull final String name,
-      @NonNull final String physicalName,
-      @NonNull final String createdAt,
-      @NonNull final String updatedAt,
-      @NonNull final String datasourceName,
-      @NonNull final String description) {
-    super(type, name, physicalName, createdAt, updatedAt, datasourceName, description);
+      final String name,
+      final String physicalName,
+      final String createdAt,
+      final String updatedAt,
+      final String sourceName,
+      @Nullable final String description) {
+    super(name, physicalName, createdAt, updatedAt, sourceName, description);
   }
 }
